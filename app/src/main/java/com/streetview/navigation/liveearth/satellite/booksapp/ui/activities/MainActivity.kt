@@ -1,14 +1,15 @@
 package com.streetview.navigation.liveearth.satellite.booksapp.ui.activities
 
+import android.graphics.pdf.PdfDocument.Page
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -19,10 +20,10 @@ import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.streetview.navigation.liveearth.satellite.booksapp.R
@@ -33,23 +34,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val itemList = listOf(
-            ListItem(R.drawable.imagesplash, "Title 1", "Subtitle 1"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
-            // Add more items as needed
-        )
-
         setContent {
-            PageDesign(itemList)
+            PreviewComposeable()
         }
     }
 }
@@ -58,12 +44,13 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun PageDesign(itemList: List<ListItem>) {
 
-    val inputvalue = remember { mutableStateOf(TextFieldValue()) }
+    val inputValue = remember { mutableStateOf(TextFieldValue()) }
+    val scrollState = rememberScrollState()
 
     ConstraintLayout(
         modifier = Modifier
-            .fillMaxSize()
-            .fillMaxWidth()
+            .wrapContentSize()
+            .verticalScroll(state = scrollState)
             .padding(start = 16.dp, top = 16.dp)
     ) {
 
@@ -116,8 +103,8 @@ private fun PageDesign(itemList: List<ListItem>) {
                 }
         ) {
             OutlinedTextField(
-                value = inputvalue.value,
-                onValueChange = { inputvalue.value = it },
+                value = inputValue.value,
+                onValueChange = { inputValue.value = it },
                 placeholder = { Text(text = "Search Box") },
                 modifier = Modifier
                     .padding(top = 16.dp, end = 16.dp)
@@ -155,66 +142,204 @@ private fun PageDesign(itemList: List<ListItem>) {
             )
 
 
-            LazyRow {
-                itemsIndexed(items = itemList.chunked(2)) { index, chunkedList ->
-                    Row(
+            LazyRow(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                itemsIndexed(items = itemList) { index, item ->
+                    Card(
                         modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            .width(160.dp)
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                            .clickable { onItemClick(item) },
+                        elevation = 5.dp
                     ) {
-                        chunkedList.forEach { item ->
-                            Card(
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
                                 modifier = Modifier
-                                    .wrapContentSize()
-                                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-                                elevation = 5.dp
+                                    .fillMaxWidth()
+                                    .height(100.dp)
+                                    .background(Color.Gray),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Column(
+                                Image(
+                                    painter = painterResource(id = item.imageResId),
+                                    contentDescription = null,
                                     modifier = Modifier
-                                        .width(160.dp), // Adjust the width as needed
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(100.dp)
-                                            .background(GreyClr),
-                                        contentAlignment = Center
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = item.imageResId),
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .height(40.dp)
-                                                .width(40.dp)
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Text(
-                                        text = item.title,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colors.onSurface,
-                                    )
-                                    Text(
-                                        text = item.subtitle,
-                                        color = MaterialTheme.colors.onSurface,
-                                        modifier = Modifier.padding(bottom = 8.dp)
-                                    )
-                                }
+                                        .height(40.dp)
+                                        .width(40.dp)
+                                )
                             }
 
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = item.title,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.onSurface
+                            )
+                            Text(
+                                text = item.subtitle,
+                                color = MaterialTheme.colors.onSurface,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
                         }
                     }
                 }
             }
+
+            LazyRow(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                itemsIndexed(items = itemList) { index, item ->
+                    Card(
+                        modifier = Modifier
+                            .width(160.dp)
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                            .clickable { onItemClick(item) },
+                        elevation = 5.dp
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(100.dp)
+                                    .background(Color.Gray),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = item.imageResId),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .width(40.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = item.title,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.onSurface
+                            )
+                            Text(
+                                text = item.subtitle,
+                                color = MaterialTheme.colors.onSurface,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+
         }
 
 
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .constrainAs(popularBooks) {
+                top.linkTo(booksCollection.bottom)
+                start.linkTo(parent.start)
+            }) {
+
+            Text(
+                text = "Popular Books",
+                style = MaterialTheme.typography.h5,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(8.dp)
+            )
+            LazyRow(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                itemsIndexed(items = itemList) { index, item ->
+                    Card(
+                        modifier = Modifier
+                            .width(160.dp)
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                            .clickable { onItemClick(item) },
+                        elevation = 5.dp
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(100.dp)
+                                    .background(Color.Gray),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = item.imageResId),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .width(40.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = item.title,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.onSurface
+                            )
+                            Text(
+                                text = item.subtitle,
+                                color = MaterialTheme.colors.onSurface,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+        }
+
     }
+
+}
+
+@Composable
+@Preview
+private fun PreviewComposeable() {
+
+    val itemList = listOf(
+        ListItem(R.drawable.imagesplash, "Title 1", "Subtitle 1"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        ListItem(R.drawable.imagesplash, "Title 2", "Subtitle 2"),
+        // Add more items as needed
+    )
+
+    PageDesign(itemList = itemList)
+
+}
+
+private fun onItemClick(item: ListItem) {
+
 
 }
 
