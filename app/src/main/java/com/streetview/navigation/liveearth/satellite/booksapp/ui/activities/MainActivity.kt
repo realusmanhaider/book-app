@@ -1,12 +1,11 @@
 package com.streetview.navigation.liveearth.satellite.booksapp.ui.activities
 
-import android.graphics.pdf.PdfDocument.Page
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -16,10 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -27,14 +26,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.streetview.navigation.liveearth.satellite.booksapp.R
-import com.streetview.navigation.liveearth.satellite.booksapp.ui.theme.GreyClr
 
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
+
             PreviewComposeable()
         }
     }
@@ -46,6 +46,8 @@ private fun PageDesign(itemList: List<ListItem>) {
 
     val inputValue = remember { mutableStateOf(TextFieldValue()) }
     val scrollState = rememberScrollState()
+
+    val context = LocalContext.current
 
     ConstraintLayout(
         modifier = Modifier
@@ -151,7 +153,7 @@ private fun PageDesign(itemList: List<ListItem>) {
                         modifier = Modifier
                             .width(160.dp)
                             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                            .clickable { onItemClick(item) },
+                            .clickable { onItemClick(item, context) },
                         elevation = 5.dp
                     ) {
                         Column(
@@ -200,7 +202,7 @@ private fun PageDesign(itemList: List<ListItem>) {
                         modifier = Modifier
                             .width(160.dp)
                             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                            .clickable { onItemClick(item) },
+                            .clickable { onItemClick(item, context) },
                         elevation = 5.dp
                     ) {
                         Column(
@@ -269,7 +271,7 @@ private fun PageDesign(itemList: List<ListItem>) {
                         modifier = Modifier
                             .width(160.dp)
                             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                            .clickable { onItemClick(item) },
+                            .clickable { onItemClick(item, context) },
                         elevation = 5.dp
                     ) {
                         Column(
@@ -338,7 +340,10 @@ private fun PreviewComposeable() {
 
 }
 
-private fun onItemClick(item: ListItem) {
+
+private fun onItemClick(item: ListItem, context: Context) {
+
+    context.startActivity(Intent(context, BookDetailsActivity::class.java))
 
 
 }
